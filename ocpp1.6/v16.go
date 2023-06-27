@@ -2,6 +2,7 @@
 package ocpp16
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
 
@@ -19,6 +20,7 @@ import (
 )
 
 type ChargePointConnection interface {
+	Context() context.Context
 	ID() string
 	RemoteAddr() net.Addr
 	TLSConnectionState() *tls.ConnectionState

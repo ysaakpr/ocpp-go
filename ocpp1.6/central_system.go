@@ -1,7 +1,6 @@
 package ocpp16
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 
@@ -459,7 +458,7 @@ func (cs *centralSystem) notSupportedError(chargePointId string, requestId strin
 
 func (cs *centralSystem) handleIncomingRequest(chargePoint ChargePointConnection, request ocpp.Request, requestId string, action string) {
 	cpId := chargePoint.ID()
-	st := types.NewStation(chargePoint.ID(), context.Background())
+	st := types.NewStation(chargePoint.ID(), chargePoint.Context())
 	profile, found := cs.server.GetProfileForFeature(action)
 	// Check whether action is supported and a handler for it exists
 	if !found {
