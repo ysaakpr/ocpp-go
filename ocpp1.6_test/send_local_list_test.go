@@ -1,13 +1,15 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
+	"time"
+
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/localauth"
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"time"
 )
 
 // Test
@@ -50,7 +52,8 @@ func (suite *OcppV16TestSuite) TestSendLocalListConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestSendLocalListE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	listVersion := 1
@@ -89,7 +92,7 @@ func (suite *OcppV16TestSuite) TestSendLocalListE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.SendLocalList(wsId, func(confirmation *localauth.SendLocalListConfirmation, err error) {
+	err = suite.centralSystem.SendLocalList(st, func(confirmation *localauth.SendLocalListConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

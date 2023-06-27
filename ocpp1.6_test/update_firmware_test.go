@@ -1,13 +1,15 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
+	"time"
+
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/firmware"
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"time"
 )
 
 // Test
@@ -36,7 +38,8 @@ func (suite *OcppV16TestSuite) TestUpdateFirmwareConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestUpdateFirmwareE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	location := "ftp:some/path"
@@ -69,7 +72,7 @@ func (suite *OcppV16TestSuite) TestUpdateFirmwareE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	assert.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.UpdateFirmware(wsId, func(confirmation *firmware.UpdateFirmwareConfirmation, err error) {
+	err = suite.centralSystem.UpdateFirmware(st, func(confirmation *firmware.UpdateFirmwareConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		resultChannel <- true

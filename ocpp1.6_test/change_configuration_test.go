@@ -1,9 +1,11 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/core"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -37,7 +39,8 @@ func (suite *OcppV16TestSuite) TestChangeConfigurationConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestChangeConfigurationE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	key := "someKey"
@@ -63,7 +66,7 @@ func (suite *OcppV16TestSuite) TestChangeConfigurationE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.ChangeConfiguration(wsId, func(confirmation *core.ChangeConfigurationConfirmation, err error) {
+	err = suite.centralSystem.ChangeConfiguration(st, func(confirmation *core.ChangeConfigurationConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

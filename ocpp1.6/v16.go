@@ -184,45 +184,45 @@ func NewChargePoint(id string, endpoint *ocppj.Client, client ws.WsClient) Charg
 // All messages are sent asynchronously and do not block the caller.
 type CentralSystem interface {
 	// Instructs a charge point to change its availability. The target availability can be set for a single connector of for the whole charge point.
-	ChangeAvailability(clientId string, callback func(*core.ChangeAvailabilityConfirmation, error), connectorId int, availabilityType core.AvailabilityType, props ...func(*core.ChangeAvailabilityRequest)) error
+	ChangeAvailability(client types.Station, callback func(*core.ChangeAvailabilityConfirmation, error), connectorId int, availabilityType core.AvailabilityType, props ...func(*core.ChangeAvailabilityRequest)) error
 	// Changes the configuration of a charge point, by setting a specific key-value pair.
 	// The configuration key must be supported by the target charge point, in order for the configuration to be accepted.
-	ChangeConfiguration(clientId string, callback func(*core.ChangeConfigurationConfirmation, error), key string, value string, props ...func(*core.ChangeConfigurationRequest)) error
+	ChangeConfiguration(client types.Station, callback func(*core.ChangeConfigurationConfirmation, error), key string, value string, props ...func(*core.ChangeConfigurationRequest)) error
 	// Instructs the charge point to clear its current authorization cache. All authorization saved locally will be invalidated.
-	ClearCache(clientId string, callback func(*core.ClearCacheConfirmation, error), props ...func(*core.ClearCacheRequest)) error
+	ClearCache(client types.Station, callback func(*core.ClearCacheConfirmation, error), props ...func(*core.ClearCacheRequest)) error
 	// Starts a custom data transfer request. Every vendor may implement their own proprietary logic for this message.
-	DataTransfer(clientId string, callback func(*core.DataTransferConfirmation, error), vendorId string, props ...func(*core.DataTransferRequest)) error
+	DataTransfer(client types.Station, callback func(*core.DataTransferConfirmation, error), vendorId string, props ...func(*core.DataTransferRequest)) error
 	// Retrieves the configuration values for the provided configuration keys.
-	GetConfiguration(clientId string, callback func(*core.GetConfigurationConfirmation, error), keys []string, props ...func(*core.GetConfigurationRequest)) error
+	GetConfiguration(client types.Station, callback func(*core.GetConfigurationConfirmation, error), keys []string, props ...func(*core.GetConfigurationRequest)) error
 	// Instructs a charge point to start a transaction for a specified client on a provided connector.
 	// Depending on the configuration, an explicit authorization message may still be required, before the transaction can start.
-	RemoteStartTransaction(clientId string, callback func(*core.RemoteStartTransactionConfirmation, error), idTag string, props ...func(*core.RemoteStartTransactionRequest)) error
+	RemoteStartTransaction(client types.Station, callback func(*core.RemoteStartTransactionConfirmation, error), idTag string, props ...func(*core.RemoteStartTransactionRequest)) error
 	// Instructs a charge point to stop an ongoing transaction, given the transaction's ID.
-	RemoteStopTransaction(clientId string, callback func(*core.RemoteStopTransactionConfirmation, error), transactionId int, props ...func(request *core.RemoteStopTransactionRequest)) error
+	RemoteStopTransaction(client types.Station, callback func(*core.RemoteStopTransactionConfirmation, error), transactionId int, props ...func(request *core.RemoteStopTransactionRequest)) error
 	// Forces a charge point to perform an internal hard or soft reset. In both cases, all ongoing transactions are stopped.
-	Reset(clientId string, callback func(*core.ResetConfirmation, error), resetType core.ResetType, props ...func(*core.ResetRequest)) error
+	Reset(client types.Station, callback func(*core.ResetConfirmation, error), resetType core.ResetType, props ...func(*core.ResetRequest)) error
 	// Attempts to unlock a specific connector on a charge point. Used for remote support purposes.
-	UnlockConnector(clientId string, callback func(*core.UnlockConnectorConfirmation, error), connectorId int, props ...func(*core.UnlockConnectorRequest)) error
+	UnlockConnector(client types.Station, callback func(*core.UnlockConnectorConfirmation, error), connectorId int, props ...func(*core.UnlockConnectorRequest)) error
 	// Queries the current version of the local authorization list from a charge point.
-	GetLocalListVersion(clientId string, callback func(*localauth.GetLocalListVersionConfirmation, error), props ...func(request *localauth.GetLocalListVersionRequest)) error
+	GetLocalListVersion(client types.Station, callback func(*localauth.GetLocalListVersionConfirmation, error), props ...func(request *localauth.GetLocalListVersionRequest)) error
 	// Sends or updates a local authorization list on a charge point. Versioning rules must be followed.
-	SendLocalList(clientId string, callback func(*localauth.SendLocalListConfirmation, error), version int, updateType localauth.UpdateType, props ...func(request *localauth.SendLocalListRequest)) error
+	SendLocalList(client types.Station, callback func(*localauth.SendLocalListConfirmation, error), version int, updateType localauth.UpdateType, props ...func(request *localauth.SendLocalListRequest)) error
 	// Requests diagnostics data from a charge point. The data will be uploaded out-of-band to the provided URL location.
-	GetDiagnostics(clientId string, callback func(*firmware.GetDiagnosticsConfirmation, error), location string, props ...func(request *firmware.GetDiagnosticsRequest)) error
+	GetDiagnostics(client types.Station, callback func(*firmware.GetDiagnosticsConfirmation, error), location string, props ...func(request *firmware.GetDiagnosticsRequest)) error
 	// Instructs the charge point to download and install a new firmware version. The firmware binary will be downloaded out-of-band from the provided URL location.
-	UpdateFirmware(clientId string, callback func(*firmware.UpdateFirmwareConfirmation, error), location string, retrieveDate *types.DateTime, props ...func(request *firmware.UpdateFirmwareRequest)) error
+	UpdateFirmware(client types.Station, callback func(*firmware.UpdateFirmwareConfirmation, error), location string, retrieveDate *types.DateTime, props ...func(request *firmware.UpdateFirmwareRequest)) error
 	// Instructs the charge point to reserve a connector for a specific IdTag (client). The connector, or the entire charge point, will be reserved until the provided expiration time.
-	ReserveNow(clientId string, callback func(*reservation.ReserveNowConfirmation, error), connectorId int, expiryDate *types.DateTime, idTag string, reservationId int, props ...func(request *reservation.ReserveNowRequest)) error
+	ReserveNow(client types.Station, callback func(*reservation.ReserveNowConfirmation, error), connectorId int, expiryDate *types.DateTime, idTag string, reservationId int, props ...func(request *reservation.ReserveNowRequest)) error
 	// Cancels a previously reserved charge point or connector, given the reservation ID.
-	CancelReservation(clientId string, callback func(*reservation.CancelReservationConfirmation, error), reservationId int, props ...func(request *reservation.CancelReservationRequest)) error
+	CancelReservation(client types.Station, callback func(*reservation.CancelReservationConfirmation, error), reservationId int, props ...func(request *reservation.CancelReservationRequest)) error
 	// Instructs a charge point to send a specific message to the central system. This is used for forcefully triggering status updates, when the last known state is either too old or not clear to the central system.
-	TriggerMessage(clientId string, callback func(*remotetrigger.TriggerMessageConfirmation, error), requestedMessage remotetrigger.MessageTrigger, props ...func(request *remotetrigger.TriggerMessageRequest)) error
+	TriggerMessage(client types.Station, callback func(*remotetrigger.TriggerMessageConfirmation, error), requestedMessage remotetrigger.MessageTrigger, props ...func(request *remotetrigger.TriggerMessageRequest)) error
 	// Sends a smart charging profile to a charge point. Refer to the smart charging documentation for more information.
-	SetChargingProfile(clientId string, callback func(*smartcharging.SetChargingProfileConfirmation, error), connectorId int, chargingProfile *types.ChargingProfile, props ...func(request *smartcharging.SetChargingProfileRequest)) error
+	SetChargingProfile(client types.Station, callback func(*smartcharging.SetChargingProfileConfirmation, error), connectorId int, chargingProfile *types.ChargingProfile, props ...func(request *smartcharging.SetChargingProfileRequest)) error
 	// Removes one or more charging profiles from a charge point.
-	ClearChargingProfile(clientId string, callback func(*smartcharging.ClearChargingProfileConfirmation, error), props ...func(request *smartcharging.ClearChargingProfileRequest)) error
+	ClearChargingProfile(client types.Station, callback func(*smartcharging.ClearChargingProfileConfirmation, error), props ...func(request *smartcharging.ClearChargingProfileRequest)) error
 	// Queries a charge point to the composite smart charging schedules and rules for a specified time interval.
-	GetCompositeSchedule(clientId string, callback func(*smartcharging.GetCompositeScheduleConfirmation, error), connectorId int, duration int, props ...func(request *smartcharging.GetCompositeScheduleRequest)) error
+	GetCompositeSchedule(client types.Station, callback func(*smartcharging.GetCompositeScheduleConfirmation, error), connectorId int, duration int, props ...func(request *smartcharging.GetCompositeScheduleRequest)) error
 
 	// Registers a handler for incoming core profile messages.
 	SetCoreHandler(handler core.CentralSystemHandler)
@@ -236,8 +236,8 @@ type CentralSystem interface {
 	SetRemoteTriggerHandler(handler remotetrigger.CentralSystemHandler)
 	// Registers a handler for incoming smart charging profile messages.
 	SetSmartChargingHandler(handler smartcharging.CentralSystemHandler)
-	// Registers a handler for new incoming Charging station connections.
-	SetNewChargingStationValidationHandler(handler ws.CheckClientHandler)
+	// Registers a handler for new incoming Charging types.Station connections.
+	StationValidationHandler(handler ws.CheckClientHandler)
 	// Registers a handler for new incoming charge point connections.
 	SetNewChargePointHandler(handler ChargePointConnectionHandler)
 	// Registers a handler for charge point disconnections.
@@ -246,7 +246,7 @@ type CentralSystem interface {
 	// The charge point will respond with a confirmation message, or with an error if the request was invalid or could not be processed.
 	// This result is propagated via a callback, called asynchronously.
 	// In case of network issues (i.e. the remote host couldn't be reached), the function returns an error directly. In this case, the callback is never called.
-	SendRequestAsync(clientId string, request ocpp.Request, callback func(ocpp.Response, error)) error
+	SendRequestAsync(client types.Station, request ocpp.Request, callback func(ocpp.Response, error)) error
 	// Starts running the central system on the specified port and URL.
 	// The central system runs as a daemon and handles incoming charge point connections and messages.
 	//

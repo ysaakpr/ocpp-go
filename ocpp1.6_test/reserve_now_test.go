@@ -1,13 +1,15 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
+	"time"
+
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/reservation"
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"time"
 )
 
 // Test
@@ -40,7 +42,8 @@ func (suite *OcppV16TestSuite) TestReserveNowConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestReserveNowE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	idTag := "12345"
@@ -75,7 +78,7 @@ func (suite *OcppV16TestSuite) TestReserveNowE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.ReserveNow(wsId, func(confirmation *reservation.ReserveNowConfirmation, err error) {
+	err = suite.centralSystem.ReserveNow(st, func(confirmation *reservation.ReserveNowConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

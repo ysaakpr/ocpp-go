@@ -3,18 +3,19 @@ package core
 
 import (
 	"github.com/lorenzodonini/ocpp-go/ocpp"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 )
 
 // Needs to be implemented by Central systems for handling messages part of the OCPP 1.6 Core profile.
 type CentralSystemHandler interface {
-	OnAuthorize(chargePointId string, request *AuthorizeRequest) (confirmation *AuthorizeConfirmation, err error)
-	OnBootNotification(chargePointId string, request *BootNotificationRequest) (confirmation *BootNotificationConfirmation, err error)
-	OnDataTransfer(chargePointId string, request *DataTransferRequest) (confirmation *DataTransferConfirmation, err error)
-	OnHeartbeat(chargePointId string, request *HeartbeatRequest) (confirmation *HeartbeatConfirmation, err error)
-	OnMeterValues(chargePointId string, request *MeterValuesRequest) (confirmation *MeterValuesConfirmation, err error)
-	OnStatusNotification(chargePointId string, request *StatusNotificationRequest) (confirmation *StatusNotificationConfirmation, err error)
-	OnStartTransaction(chargePointId string, request *StartTransactionRequest) (confirmation *StartTransactionConfirmation, err error)
-	OnStopTransaction(chargePointId string, request *StopTransactionRequest) (confirmation *StopTransactionConfirmation, err error)
+	OnAuthorize(client types.Station, request *AuthorizeRequest) (confirmation *AuthorizeConfirmation, err error)
+	OnBootNotification(client types.Station, request *BootNotificationRequest) (confirmation *BootNotificationConfirmation, err error)
+	OnDataTransfer(client types.Station, request *DataTransferRequest) (confirmation *DataTransferConfirmation, err error)
+	OnHeartbeat(client types.Station, request *HeartbeatRequest) (confirmation *HeartbeatConfirmation, err error)
+	OnMeterValues(client types.Station, request *MeterValuesRequest) (confirmation *MeterValuesConfirmation, err error)
+	OnStatusNotification(client types.Station, request *StatusNotificationRequest) (confirmation *StatusNotificationConfirmation, err error)
+	OnStartTransaction(client types.Station, request *StartTransactionRequest) (confirmation *StartTransactionConfirmation, err error)
+	OnStopTransaction(client types.Station, request *StopTransactionRequest) (confirmation *StopTransactionConfirmation, err error)
 }
 
 // Needs to be implemented by Charge points for handling messages part of the OCPP 1.6 Core profile.

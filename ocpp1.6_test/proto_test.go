@@ -1,10 +1,12 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp"
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/core"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/lorenzodonini/ocpp-go/ocppj"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -13,7 +15,8 @@ import (
 
 func (suite *OcppV16TestSuite) TestChargePointSendResponseError() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	channel := NewMockWebSocket(wsId)
 	var ocppErr *ocpp.Error
 	// Setup internal communication and listeners
@@ -45,7 +48,7 @@ func (suite *OcppV16TestSuite) TestChargePointSendResponseError() {
 	dataTransferConfirmation := core.NewDataTransferConfirmation(core.DataTransferStatusAccepted)
 	dataTransferConfirmation.Data = CustomData{Field1: "", Field2: 42}
 	coreListener.On("OnDataTransfer", mock.Anything).Return(dataTransferConfirmation, nil)
-	err = suite.centralSystem.DataTransfer(wsId, func(confirmation *core.DataTransferConfirmation, err error) {
+	err = suite.centralSystem.DataTransfer(st, func(confirmation *core.DataTransferConfirmation, err error) {
 		require.Nil(t, confirmation)
 		require.Error(t, err)
 		resultChannel <- err
@@ -61,7 +64,7 @@ func (suite *OcppV16TestSuite) TestChargePointSendResponseError() {
 	dataTransferConfirmation.Data = make(chan struct{})
 	coreListener.ExpectedCalls = nil
 	coreListener.On("OnDataTransfer", mock.Anything).Return(dataTransferConfirmation, nil)
-	err = suite.centralSystem.DataTransfer(wsId, func(confirmation *core.DataTransferConfirmation, err error) {
+	err = suite.centralSystem.DataTransfer(st, func(confirmation *core.DataTransferConfirmation, err error) {
 		require.Nil(t, confirmation)
 		require.Error(t, err)
 		resultChannel <- err
@@ -75,7 +78,7 @@ func (suite *OcppV16TestSuite) TestChargePointSendResponseError() {
 	// Test 3: no results in callback
 	coreListener.ExpectedCalls = nil
 	coreListener.On("OnDataTransfer", mock.Anything).Return(nil, nil)
-	err = suite.centralSystem.DataTransfer(wsId, func(confirmation *core.DataTransferConfirmation, err error) {
+	err = suite.centralSystem.DataTransfer(st, func(confirmation *core.DataTransferConfirmation, err error) {
 		require.Nil(t, confirmation)
 		require.Error(t, err)
 		resultChannel <- err

@@ -1,6 +1,7 @@
 package ocpp16_test
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -29,6 +30,10 @@ import (
 // ---------------------- MOCK WEBSOCKET ----------------------
 type MockWebSocket struct {
 	id string
+}
+
+func (websocket MockWebSocket) Context() context.Context {
+	return context.Background()
 }
 
 func (websocket MockWebSocket) ID() string {
@@ -211,20 +216,20 @@ type MockCentralSystemCoreListener struct {
 	mock.Mock
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnAuthorize(chargePointId string, request *core.AuthorizeRequest) (confirmation *core.AuthorizeConfirmation, err error) {
-	args := coreListener.MethodCalled("OnAuthorize", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnAuthorize(st types.Station, request *core.AuthorizeRequest) (confirmation *core.AuthorizeConfirmation, err error) {
+	args := coreListener.MethodCalled("OnAuthorize", st.ID(), request)
 	conf := args.Get(0).(*core.AuthorizeConfirmation)
 	return conf, args.Error(1)
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnBootNotification(chargePointId string, request *core.BootNotificationRequest) (confirmation *core.BootNotificationConfirmation, err error) {
-	args := coreListener.MethodCalled("OnBootNotification", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnBootNotification(st types.Station, request *core.BootNotificationRequest) (confirmation *core.BootNotificationConfirmation, err error) {
+	args := coreListener.MethodCalled("OnBootNotification", st.ID(), request)
 	conf := args.Get(0).(*core.BootNotificationConfirmation)
 	return conf, args.Error(1)
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnDataTransfer(chargePointId string, request *core.DataTransferRequest) (confirmation *core.DataTransferConfirmation, err error) {
-	args := coreListener.MethodCalled("OnDataTransfer", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnDataTransfer(st types.Station, request *core.DataTransferRequest) (confirmation *core.DataTransferConfirmation, err error) {
+	args := coreListener.MethodCalled("OnDataTransfer", st.ID(), request)
 	rawConf := args.Get(0)
 	err = args.Error(1)
 	if rawConf != nil {
@@ -233,32 +238,32 @@ func (coreListener *MockCentralSystemCoreListener) OnDataTransfer(chargePointId 
 	return
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnHeartbeat(chargePointId string, request *core.HeartbeatRequest) (confirmation *core.HeartbeatConfirmation, err error) {
-	args := coreListener.MethodCalled("OnHeartbeat", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnHeartbeat(st types.Station, request *core.HeartbeatRequest) (confirmation *core.HeartbeatConfirmation, err error) {
+	args := coreListener.MethodCalled("OnHeartbeat", st.ID(), request)
 	conf := args.Get(0).(*core.HeartbeatConfirmation)
 	return conf, args.Error(1)
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnMeterValues(chargePointId string, request *core.MeterValuesRequest) (confirmation *core.MeterValuesConfirmation, err error) {
-	args := coreListener.MethodCalled("OnMeterValues", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnMeterValues(st types.Station, request *core.MeterValuesRequest) (confirmation *core.MeterValuesConfirmation, err error) {
+	args := coreListener.MethodCalled("OnMeterValues", st.ID(), request)
 	conf := args.Get(0).(*core.MeterValuesConfirmation)
 	return conf, args.Error(1)
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnStartTransaction(chargePointId string, request *core.StartTransactionRequest) (confirmation *core.StartTransactionConfirmation, err error) {
-	args := coreListener.MethodCalled("OnStartTransaction", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnStartTransaction(st types.Station, request *core.StartTransactionRequest) (confirmation *core.StartTransactionConfirmation, err error) {
+	args := coreListener.MethodCalled("OnStartTransaction", st.ID(), request)
 	conf := args.Get(0).(*core.StartTransactionConfirmation)
 	return conf, args.Error(1)
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnStatusNotification(chargePointId string, request *core.StatusNotificationRequest) (confirmation *core.StatusNotificationConfirmation, err error) {
-	args := coreListener.MethodCalled("OnStatusNotification", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnStatusNotification(st types.Station, request *core.StatusNotificationRequest) (confirmation *core.StatusNotificationConfirmation, err error) {
+	args := coreListener.MethodCalled("OnStatusNotification", st.ID(), request)
 	conf := args.Get(0).(*core.StatusNotificationConfirmation)
 	return conf, args.Error(1)
 }
 
-func (coreListener *MockCentralSystemCoreListener) OnStopTransaction(chargePointId string, request *core.StopTransactionRequest) (confirmation *core.StopTransactionConfirmation, err error) {
-	args := coreListener.MethodCalled("OnStopTransaction", chargePointId, request)
+func (coreListener *MockCentralSystemCoreListener) OnStopTransaction(st types.Station, request *core.StopTransactionRequest) (confirmation *core.StopTransactionConfirmation, err error) {
+	args := coreListener.MethodCalled("OnStopTransaction", st.ID(), request)
 	conf := args.Get(0).(*core.StopTransactionConfirmation)
 	return conf, args.Error(1)
 }
@@ -353,14 +358,14 @@ type MockCentralSystemFirmwareManagementListener struct {
 	mock.Mock
 }
 
-func (firmwareListener MockCentralSystemFirmwareManagementListener) OnDiagnosticsStatusNotification(chargePointId string, request *firmware.DiagnosticsStatusNotificationRequest) (confirmation *firmware.DiagnosticsStatusNotificationConfirmation, err error) {
-	args := firmwareListener.MethodCalled("OnDiagnosticsStatusNotification", chargePointId, request)
+func (firmwareListener MockCentralSystemFirmwareManagementListener) OnDiagnosticsStatusNotification(st types.Station, request *firmware.DiagnosticsStatusNotificationRequest) (confirmation *firmware.DiagnosticsStatusNotificationConfirmation, err error) {
+	args := firmwareListener.MethodCalled("OnDiagnosticsStatusNotification", st.ID(), request)
 	conf := args.Get(0).(*firmware.DiagnosticsStatusNotificationConfirmation)
 	return conf, args.Error(1)
 }
 
-func (firmwareListener MockCentralSystemFirmwareManagementListener) OnFirmwareStatusNotification(chargePointId string, request *firmware.FirmwareStatusNotificationRequest) (confirmation *firmware.FirmwareStatusNotificationConfirmation, err error) {
-	args := firmwareListener.MethodCalled("OnFirmwareStatusNotification", chargePointId, request)
+func (firmwareListener MockCentralSystemFirmwareManagementListener) OnFirmwareStatusNotification(st types.Station, request *firmware.FirmwareStatusNotificationRequest) (confirmation *firmware.FirmwareStatusNotificationConfirmation, err error) {
+	args := firmwareListener.MethodCalled("OnFirmwareStatusNotification", st.ID(), request)
 	conf := args.Get(0).(*firmware.FirmwareStatusNotificationConfirmation)
 	return conf, args.Error(1)
 }
@@ -598,7 +603,8 @@ func testUnsupportedRequestFromChargePoint(suite *OcppV16TestSuite, request ocpp
 
 func testUnsupportedRequestFromCentralSystem(suite *OcppV16TestSuite, request ocpp.Request, requestJson string, messageId string) {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	wsUrl := "someUrl"
 	expectedError := fmt.Sprintf("unsupported action %v on central system, cannot send request", request.GetFeatureName())
 	errorDescription := fmt.Sprintf("unsupported action %v on charge point", request.GetFeatureName())
@@ -622,7 +628,7 @@ func testUnsupportedRequestFromCentralSystem(suite *OcppV16TestSuite, request oc
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	// 1. Test sending an unsupported request, expecting an error
-	err = suite.centralSystem.SendRequestAsync(wsId, request, func(confirmation ocpp.Response, err error) {
+	err = suite.centralSystem.SendRequestAsync(st, request, func(confirmation ocpp.Response, err error) {
 		t.Fail()
 	})
 	require.Error(t, err)

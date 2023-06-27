@@ -1,8 +1,11 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/reservation"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -31,7 +34,8 @@ func (suite *OcppV16TestSuite) TestCancelReservationConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestCancelReservationE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	reservationId := 42
@@ -56,7 +60,7 @@ func (suite *OcppV16TestSuite) TestCancelReservationE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.CancelReservation(wsId, func(confirmation *reservation.CancelReservationConfirmation, err error) {
+	err = suite.centralSystem.CancelReservation(st, func(confirmation *reservation.CancelReservationConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

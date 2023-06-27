@@ -1,6 +1,7 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -41,7 +42,8 @@ func (suite *OcppV16TestSuite) TestGetDiagnosticsConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestGetDiagnosticsE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	location := "ftp:some/path"
@@ -78,7 +80,7 @@ func (suite *OcppV16TestSuite) TestGetDiagnosticsE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.GetDiagnostics(wsId, func(confirmation *firmware.GetDiagnosticsConfirmation, err error) {
+	err = suite.centralSystem.GetDiagnostics(st, func(confirmation *firmware.GetDiagnosticsConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, fileName, confirmation.FileName)

@@ -1,9 +1,11 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/core"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -34,7 +36,8 @@ func (suite *OcppV16TestSuite) TestResetConfirmationValidation() {
 // Test
 func (suite *OcppV16TestSuite) TestResetE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	resetType := core.ResetTypeSoft
@@ -58,7 +61,7 @@ func (suite *OcppV16TestSuite) TestResetE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.Reset(wsId, func(confirmation *core.ResetConfirmation, err error) {
+	err = suite.centralSystem.Reset(st, func(confirmation *core.ResetConfirmation, err error) {
 		require.NotNil(t, confirmation)
 		require.Nil(t, err)
 		assert.Equal(t, status, confirmation.Status)

@@ -3,12 +3,13 @@ package firmware
 
 import (
 	"github.com/lorenzodonini/ocpp-go/ocpp"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 )
 
 // Needs to be implemented by Central systems for handling messages part of the OCPP 1.6 FirmwareManagement profile.
 type CentralSystemHandler interface {
-	OnDiagnosticsStatusNotification(chargePointId string, request *DiagnosticsStatusNotificationRequest) (confirmation *DiagnosticsStatusNotificationConfirmation, err error)
-	OnFirmwareStatusNotification(chargePointId string, request *FirmwareStatusNotificationRequest) (confirmation *FirmwareStatusNotificationConfirmation, err error)
+	OnDiagnosticsStatusNotification(client types.Station, request *DiagnosticsStatusNotificationRequest) (confirmation *DiagnosticsStatusNotificationConfirmation, err error)
+	OnFirmwareStatusNotification(client types.Station, request *FirmwareStatusNotificationRequest) (confirmation *FirmwareStatusNotificationConfirmation, err error)
 }
 
 // Needs to be implemented by Charge points for handling messages part of the OCPP 1.6 FirmwareManagement profile.

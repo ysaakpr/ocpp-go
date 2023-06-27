@@ -1,6 +1,7 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/core"
@@ -34,7 +35,8 @@ func (suite *OcppV16TestSuite) TestRemoteStopTransactionConfirmationValidation()
 
 func (suite *OcppV16TestSuite) TestRemoteStopTransactionE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	transactionId := 1
@@ -58,7 +60,7 @@ func (suite *OcppV16TestSuite) TestRemoteStopTransactionE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.RemoteStopTransaction(wsId, func(confirmation *core.RemoteStopTransactionConfirmation, err error) {
+	err = suite.centralSystem.RemoteStopTransaction(st, func(confirmation *core.RemoteStopTransactionConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

@@ -1,10 +1,12 @@
 package ocpp16_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/core"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -91,7 +93,8 @@ func (suite *OcppV16TestSuite) TestDataTransferFromChargePointE2EMocked() {
 
 func (suite *OcppV16TestSuite) TestDataTransferFromCentralSystemE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	vendorId := "vendor1"
@@ -122,7 +125,7 @@ func (suite *OcppV16TestSuite) TestDataTransferFromCentralSystemE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.DataTransfer(wsId, func(confirmation *core.DataTransferConfirmation, err error) {
+	err = suite.centralSystem.DataTransfer(st, func(confirmation *core.DataTransferConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

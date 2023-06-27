@@ -103,6 +103,7 @@ type Channel interface {
 	ID() string
 	RemoteAddr() net.Addr
 	TLSConnectionState() *tls.ConnectionState
+	Context() context.Context
 }
 
 // WebSocket is a wrapper for a single websocket channel.
@@ -110,6 +111,7 @@ type Channel interface {
 //
 // Don't use a websocket directly, but refer to WsServer and WsClient.
 type WebSocket struct {
+	ctx                context.Context
 	connection         *websocket.Conn
 	id                 string
 	outQueue           chan []byte
@@ -117,6 +119,11 @@ type WebSocket struct {
 	forceCloseC        chan error                // used by the readPump to notify a forcefully closed connection to the writePump.
 	pingMessage        chan []byte
 	tlsConnectionState *tls.ConnectionState
+}
+
+// Retrieves the unique Identifier of the websocket (typically, the URL suffix).
+func (websocket *WebSocket) Context() context.Context {
+	return websocket.ctx
 }
 
 // Retrieves the unique Identifier of the websocket (typically, the URL suffix).
@@ -374,7 +381,11 @@ func (server *Server) Start(port int, listenPath string) {
 	server.httpServer.Addr = addr
 
 	server.AddHttpHandler(listenPath, func(w http.ResponseWriter, r *http.Request) {
-		server.wsHandler(w, r)
+		vars := mux.Vars(r)
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, CtxKeyPathVersion, vars[string("version")])
+		ctx = context.WithValue(ctx, CtxKeyPathTenant, vars[string("tenant")])
+		server.wsHandler(ctx, w, r)
 	})
 	server.httpServer.Handler = server.httpHandler
 
@@ -447,10 +458,18 @@ func (server *Server) Write(webSocketId string, data []byte) error {
 	return nil
 }
 
-func (server *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
+type ocppCtxKey string
+
+const (
+	CtxKeyPathVersion ocppCtxKey = "__CtxKeyPathVersion__"
+	CtxKeyPathTenant  ocppCtxKey = "__CtxKeyPathTenant__"
+)
+
+func (server *Server) wsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	responseHeader := http.Header{}
 	url := r.URL
 	id := path.Base(url.Path)
+
 	log.Debugf("handling new connection for %s from %s", id, r.RemoteAddr)
 	// Negotiate sub-protocol
 	clientSubprotocols := websocket.Subprotocols(r)
@@ -505,6 +524,7 @@ out:
 
 	// The id of the charge point is the final path element
 	ws := WebSocket{
+		ctx:                ctx,
 		connection:         conn,
 		id:                 id,
 		outQueue:           make(chan []byte, 1),
@@ -1057,6 +1077,7 @@ func (client *Client) Start(urlStr string) error {
 	id := path.Base(url.Path)
 	client.url = *url
 	client.webSocket = WebSocket{
+		ctx:                context.TODO(),
 		connection:         ws,
 		id:                 id,
 		outQueue:           make(chan []byte, 1),

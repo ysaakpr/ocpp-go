@@ -1,9 +1,11 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/core"
+	"github.com/lorenzodonini/ocpp-go/ocpp1.6/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -31,7 +33,8 @@ func (suite *OcppV16TestSuite) TestClearCacheConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestClearCacheE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	status := core.ClearCacheStatusAccepted
@@ -49,7 +52,7 @@ func (suite *OcppV16TestSuite) TestClearCacheE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.ClearCache(wsId, func(confirmation *core.ClearCacheConfirmation, err error) {
+	err = suite.centralSystem.ClearCache(st, func(confirmation *core.ClearCacheConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)

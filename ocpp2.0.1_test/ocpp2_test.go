@@ -1,6 +1,7 @@
 package ocpp2_test
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -41,6 +42,10 @@ import (
 
 type MockWebSocket struct {
 	id string
+}
+
+func (websocket MockWebSocket) Context() context.Context {
+	return context.Background()
 }
 
 func (websocket MockWebSocket) ID() string {

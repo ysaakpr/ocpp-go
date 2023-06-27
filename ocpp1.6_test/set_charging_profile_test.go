@@ -1,6 +1,7 @@
 package ocpp16_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lorenzodonini/ocpp-go/ocpp1.6/smartcharging"
@@ -37,7 +38,8 @@ func (suite *OcppV16TestSuite) TestSetChargingProfileConfirmationValidation() {
 
 func (suite *OcppV16TestSuite) TestSetChargingProfileE2EMocked() {
 	t := suite.T()
-	wsId := "test_id"
+	st := types.NewStation("test_id", context.Background())
+	wsId := st.ID()
 	messageId := defaultMessageId
 	wsUrl := "someUrl"
 	connectorId := 1
@@ -97,7 +99,7 @@ func (suite *OcppV16TestSuite) TestSetChargingProfileE2EMocked() {
 	err := suite.chargePoint.Start(wsUrl)
 	require.Nil(t, err)
 	resultChannel := make(chan bool, 1)
-	err = suite.centralSystem.SetChargingProfile(wsId, func(confirmation *smartcharging.SetChargingProfileConfirmation, err error) {
+	err = suite.centralSystem.SetChargingProfile(st, func(confirmation *smartcharging.SetChargingProfileConfirmation, err error) {
 		require.Nil(t, err)
 		require.NotNil(t, confirmation)
 		assert.Equal(t, status, confirmation.Status)
