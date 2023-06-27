@@ -36,6 +36,7 @@ const (
 
 func newWebsocketServer(t *testing.T, onMessage func(data []byte) ([]byte, error)) *Server {
 	wsServer := NewServer()
+	wsServer.SetListenPath(serverPath)
 	wsServer.SetMessageHandler(func(ws Channel, data []byte) error {
 		assert.NotNil(t, ws)
 		assert.NotNil(t, data)
@@ -137,7 +138,7 @@ func TestWebsocketEcho(t *testing.T) {
 		return nil, nil
 	})
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	// Start flow routine
 	go func() {
 		// Wait for messages to be exchanged, then close connection
@@ -215,7 +216,7 @@ func TestTLSWebsocketEcho(t *testing.T) {
 	})
 
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	// Start flow routine
 	go func() {
 		// Wait for messages to be exchanged, then close connection
@@ -260,10 +261,10 @@ func TestServerStartErrors(t *testing.T) {
 		triggerC <- true
 	}()
 	time.Sleep(100 * time.Millisecond)
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(100 * time.Millisecond)
 	// Starting server again throws error
-	wsServer.Start(serverPort, serverPath)
+	wsServer.Start(serverPort)
 	r := <-triggerC
 	require.True(t, r)
 	wsServer.Stop()
@@ -274,7 +275,7 @@ func TestClientDuplicateConnection(t *testing.T) {
 	wsServer.SetNewClientHandler(func(ws Channel) {
 	})
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(100 * time.Millisecond)
 	// Connect client 1
 	wsClient1 := newWebsocketClient(t, func(data []byte) ([]byte, error) {
@@ -333,7 +334,7 @@ func TestServerStopConnection(t *testing.T) {
 		disconnectedClientC <- struct{}{}
 	})
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(100 * time.Millisecond)
 	// Connect client
 	host := fmt.Sprintf("localhost:%v", serverPort)
@@ -372,7 +373,7 @@ func TestWebsocketServerStopAllConnections(t *testing.T) {
 		disconnectedServerC <- struct{}{}
 	})
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(100 * time.Millisecond)
 	// Connect clients
 	clients := []WsClient{}
@@ -424,7 +425,7 @@ func TestWebsocketClientConnectionBreak(t *testing.T) {
 	wsServer.SetDisconnectedClientHandler(func(ws Channel) {
 		disconnected <- true
 	})
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(1 * time.Second)
 
 	// Test
@@ -462,7 +463,7 @@ func TestWebsocketServerConnectionBreak(t *testing.T) {
 	wsServer.SetDisconnectedClientHandler(func(ws Channel) {
 		disconnected <- true
 	})
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(1 * time.Second)
 
 	// Test
@@ -501,7 +502,7 @@ func TestValidBasicAuth(t *testing.T) {
 		connected <- true
 	})
 	// Run server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(1 * time.Second)
 
 	// Create TLS client
@@ -552,7 +553,7 @@ func TestInvalidBasicAuth(t *testing.T) {
 		t.Fail()
 	})
 	// Run server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(1 * time.Second)
 
 	// Create TLS client
@@ -597,7 +598,7 @@ func TestInvalidOriginHeader(t *testing.T) {
 	wsServer.SetNewClientHandler(func(ws Channel) {
 		assert.Fail(t, "no new connection should be received from client!")
 	})
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(500 * time.Millisecond)
 
 	// Test message
@@ -634,7 +635,7 @@ func TestCustomOriginHeaderHandler(t *testing.T) {
 	wsServer.SetCheckOriginHandler(func(r *http.Request) bool {
 		return r.Header.Get("Origin") == origin
 	})
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(500 * time.Millisecond)
 
 	// Test message
@@ -679,7 +680,7 @@ func TestCustomCheckClientHandler(t *testing.T) {
 	wsServer.SetCheckClientHandler(func(clientId string, r *http.Request) bool {
 		return id == clientId
 	})
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(500 * time.Millisecond)
 
 	// Test message
@@ -740,7 +741,7 @@ func TestValidClientTLSCertificate(t *testing.T) {
 		connected <- true
 	})
 	// Run server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(1 * time.Second)
 
 	// Create TLS client
@@ -798,7 +799,7 @@ func TestInvalidClientTLSCertificate(t *testing.T) {
 		t.Fail()
 	})
 	// Run server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(200 * time.Millisecond)
 
 	// Create TLS client
@@ -838,7 +839,7 @@ func TestUnsupportedSubProtocol(t *testing.T) {
 	wsServer.AddSupportedSubprotocol(defaultSubProtocol)
 	assert.Len(t, wsServer.upgrader.Subprotocols, 1)
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(1 * time.Second)
 
 	// Setup client
@@ -885,7 +886,7 @@ func TestSetServerTimeoutConfig(t *testing.T) {
 	config.WriteWait = writeWait
 	wsServer.SetTimeoutConfig(config)
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(500 * time.Millisecond)
 	assert.Equal(t, wsServer.timeoutConfig.PingWait, pingWait)
 	assert.Equal(t, wsServer.timeoutConfig.WriteWait, writeWait)
@@ -912,7 +913,7 @@ func TestSetClientTimeoutConfig(t *testing.T) {
 		disconnected <- true
 	})
 	// Start server
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(200 * time.Millisecond)
 	// Run test
 	wsClient := newWebsocketClient(t, nil)
@@ -983,7 +984,7 @@ func TestServerErrors(t *testing.T) {
 	assert.True(t, r)
 	// Start server for real
 	wsServer.httpServer = &http.Server{}
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(200 * time.Millisecond)
 	// Create and connect client
 	wsClient := newWebsocketClient(t, nil)
@@ -1039,7 +1040,7 @@ func TestClientErrors(t *testing.T) {
 			}
 		}
 	}()
-	go wsServer.Start(serverPort, serverPath)
+	go wsServer.Start(serverPort)
 	time.Sleep(200 * time.Millisecond)
 	// Attempt to write a message without being connected
 	err := wsClient.Write([]byte("dummy message"))

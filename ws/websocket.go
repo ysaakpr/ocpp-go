@@ -198,7 +198,7 @@ type WsServer interface {
 	//	...
 	//
 	// To stop a running server, call the Stop function.
-	Start(port int, listenPath string)
+	Start(port int)
 	// Shuts down a running websocket server.
 	// All open channels will be forcefully closed, and the previously called Start function will return.
 	Stop()
@@ -274,13 +274,13 @@ type Server struct {
 
 // Creates a new simple websocket server (the websockets are not secured).
 func NewServer() *Server {
-	router := mux.NewRouter()
+	// router := mux.NewRouter()
 	return &Server{
 		httpServer:    &http.Server{},
 		timeoutConfig: NewServerTimeoutConfig(),
 		upgrader:      websocket.Upgrader{Subprotocols: []string{}},
-		httpHandler:   router,
-		listenPath:    "/{ws}",
+		// httpHandler:   router,
+		listenPath: "/{ws}",
 	}
 }
 
@@ -299,7 +299,7 @@ func NewServer() *Server {
 // If no tlsConfig parameter is passed, the server will by default
 // not perform any client certificate verification.
 func NewTLSServer(certificatePath string, certificateKey string, tlsConfig *tls.Config) *Server {
-	router := mux.NewRouter()
+	// router := mux.NewRouter()
 	return &Server{
 		tlsCertificatePath: certificatePath,
 		tlsCertificateKey:  certificateKey,
@@ -308,8 +308,8 @@ func NewTLSServer(certificatePath string, certificateKey string, tlsConfig *tls.
 		},
 		timeoutConfig: NewServerTimeoutConfig(),
 		upgrader:      websocket.Upgrader{Subprotocols: []string{}},
-		httpHandler:   router,
-		listenPath:    "/{ws}",
+		// httpHandler:   router,
+		listenPath: "/{ws}",
 	}
 }
 

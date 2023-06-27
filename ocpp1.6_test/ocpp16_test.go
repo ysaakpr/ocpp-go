@@ -65,8 +65,8 @@ type MockWebsocketServer struct {
 	DisconnectedClientHandler func(ws ws.Channel)
 }
 
-func (websocketServer *MockWebsocketServer) Start(port int, listenPath string) {
-	websocketServer.MethodCalled("Start", port, listenPath)
+func (websocketServer *MockWebsocketServer) Start(port int) {
+	websocketServer.MethodCalled("Start", port)
 }
 
 func (websocketServer *MockWebsocketServer) Stop() {

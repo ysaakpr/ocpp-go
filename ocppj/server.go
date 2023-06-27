@@ -113,7 +113,7 @@ func (s *Server) Start(listenPort int, listenPath string) {
 	s.server.SetMessageHandler(s.ocppMessageHandler)
 	s.dispatcher.Start()
 	// Serve & run
-	s.server.Start(listenPort, listenPath)
+	s.server.Start(listenPort)
 	// TODO: return error?
 }
 
