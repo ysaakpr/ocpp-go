@@ -269,6 +269,7 @@ type Server struct {
 	connMutex           sync.RWMutex
 	addr                *net.TCPAddr
 	httpHandler         *mux.Router
+	listenPath          string
 }
 
 // Creates a new simple websocket server (the websockets are not secured).
@@ -279,6 +280,7 @@ func NewServer() *Server {
 		timeoutConfig: NewServerTimeoutConfig(),
 		upgrader:      websocket.Upgrader{Subprotocols: []string{}},
 		httpHandler:   router,
+		listenPath:    "/{ws}",
 	}
 }
 
@@ -307,6 +309,7 @@ func NewTLSServer(certificatePath string, certificateKey string, tlsConfig *tls.
 		timeoutConfig: NewServerTimeoutConfig(),
 		upgrader:      websocket.Upgrader{Subprotocols: []string{}},
 		httpHandler:   router,
+		listenPath:    "/{ws}",
 	}
 }
 
@@ -370,8 +373,15 @@ func (server *Server) AddHttpHandler(listenPath string, handler func(w http.Resp
 	server.httpHandler.HandleFunc(listenPath, handler)
 }
 
-func (server *Server) Start(port int, listenPath string) {
+func (server *Server) SetMuxRouter(r *mux.Router) {
+	server.httpHandler = r
+}
 
+func (server *Server) SetListenPath(listenPath string) {
+	server.listenPath = listenPath
+}
+
+func (server *Server) Start(port int) {
 	server.connections = make(map[string]*WebSocket)
 	if server.httpServer == nil {
 		server.httpServer = &http.Server{}
@@ -380,13 +390,13 @@ func (server *Server) Start(port int, listenPath string) {
 	addr := fmt.Sprintf(":%v", port)
 	server.httpServer.Addr = addr
 
-	server.AddHttpHandler(listenPath, func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		ctx := context.Background()
-		ctx = context.WithValue(ctx, CtxKeyPathVersion, vars[string("version")])
-		ctx = context.WithValue(ctx, CtxKeyPathTenant, vars[string("tenant")])
-		server.wsHandler(ctx, w, r)
-	})
+	if server.httpHandler == nil {
+		server.SetMuxRouter(mux.NewRouter())
+		server.AddHttpHandler(server.listenPath, func(w http.ResponseWriter, r *http.Request) {
+			server.WsHandler(context.TODO(), w, r)
+		})
+	}
+
 	server.httpServer.Handler = server.httpHandler
 
 	ln, err := net.Listen("tcp", addr)
@@ -465,7 +475,7 @@ const (
 	CtxKeyPathTenant  ocppCtxKey = "__CtxKeyPathTenant__"
 )
 
-func (server *Server) wsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (server *Server) WsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	responseHeader := http.Header{}
 	url := r.URL
 	id := path.Base(url.Path)
