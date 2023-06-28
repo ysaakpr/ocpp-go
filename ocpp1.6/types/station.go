@@ -4,8 +4,8 @@ import "context"
 
 type Station interface {
 	ID() string
-	Get(string) interface{}
-	GetString(string) (string, bool)
+	Get(any) interface{}
+	GetString(any) (string, bool)
 	Context() context.Context
 	SetContext(context.Context)
 }
@@ -30,11 +30,11 @@ func (s *station) Context() context.Context {
 	return s.ctx
 }
 
-func (s *station) Get(key string) interface{} {
+func (s *station) Get(key any) interface{} {
 	return s.ctx.Value(key)
 }
 
-func (s *station) GetString(key string) (string, bool) {
+func (s *station) GetString(key any) (string, bool) {
 	v, ok := s.ctx.Value(key).(string)
 	return v, ok
 }
