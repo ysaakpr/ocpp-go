@@ -381,6 +381,10 @@ func (server *Server) SetListenPath(listenPath string) {
 	server.listenPath = listenPath
 }
 
+func (server *Server) SetUpgrader(u websocket.Upgrader) {
+	server.upgrader = u
+}
+
 func (server *Server) Start(port int) {
 	server.connections = make(map[string]*WebSocket)
 	if server.httpServer == nil {
